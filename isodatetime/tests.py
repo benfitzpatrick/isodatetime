@@ -444,6 +444,12 @@ def get_timerecurrenceparser_tests():
                     yield expr_1, {"repetitions": reps,
                                     "start_point": start_point,
                                     "end_point": end_point}
+                expr_2 = ("R" + reps_string + "/" + str(interval))
+                yield (expr_2, start_point), {
+                    "repetitions": reps,
+                    "start_point": start_point,
+                    "interval": interval
+                }
                 expr_3 = ("R" + reps_string + "/" + str(start_point) +
                             "/" + str(interval))
                 yield expr_3, {"repetitions": reps,
@@ -588,8 +594,12 @@ class TestSuite(unittest.TestCase):
         """Test the recurring date/time series parsing."""
         parser = parsers.TimeRecurrenceParser()
         for expression, test_info in get_timerecurrenceparser_tests():
+            context_point=None
+            if isinstance(expression, tuple):
+                expression, context_point = expression
             try:
-                test_data = str(parser.parse(expression))
+                test_data = str(parser.parse(expression,
+                                context_point=context_point))
             except parsers.TimeSyntaxError:
                 raise ValueError("Parsing failed for %s" % expression)
             ctrl_data = str(data.TimeRecurrence(**test_info))

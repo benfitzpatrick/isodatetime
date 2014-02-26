@@ -67,8 +67,28 @@ class TimeRecurrenceParser(object):
         else:
             self.timepoint_parser = timeinterval_parser
 
-    def parse(self, expression):
-        """Parse a recurrence string into a TimeRecurrence instance."""
+    def parse(self, expression, context_point=None):
+        """Parse a recurrence string into a TimeRecurrence instance.
+
+        expression should be a string that looks like one of the four
+        ISO 8601 recurrence formats - e.g.
+        "R5/20140228T0630Z/20140228T0830Z"
+        "R5/PT10M"  (with a supplied context)
+        "R5/20140228T0630Z/PT10M"
+        "R5/PT10M/20140228T0830Z"
+        
+        where the slash is a delimiter, the number following the R is
+        an optional limit for the number of recurrences, strings
+        beginning with "2014" are ISO 8601 date/time representations,
+        and string beginning with "P" are ISO 8601 duration
+        representations.
+
+        context_point should be given for the second format, which will
+        then behave in the same way as the third format - start at
+        the context point and apply the interval counting forwards in
+        time.
+
+        """
         for regex in self.RECURRENCE_REGEXES:
             result = regex.search(expression)
             if not result:
@@ -87,6 +107,10 @@ class TimeRecurrenceParser(object):
             if "intv" in result_map:
                 interval = self.timeinterval_parser.parse(
                     result_map["intv"])
+            if (context_point is not None and start_point is None and
+                    end_point is None):
+                # Second ISO 8601 recurrence format.
+                start_point = context_point
             return data.TimeRecurrence(
                 repetitions=repetitions,
                 start_point=start_point,
