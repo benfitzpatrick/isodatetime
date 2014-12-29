@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #-----------------------------------------------------------------------------
-# Run tests for the ISO 8601 parsing and data model functionality."""
+# Run tests for the ISO 8601 parsing and data model functionality.
+# If arguments are specified, only run tests that contain at least one of the
+# arguments in their name.
 #-----------------------------------------------------------------------------
 cd $(dirname $0)/../
-python -m isodatetime.tests
+python -m isodatetime.tests "$@"

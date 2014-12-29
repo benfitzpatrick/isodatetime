@@ -20,6 +20,7 @@
 
 import copy
 import multiprocessing
+import optparse
 import unittest
 
 from . import data
@@ -1303,9 +1304,20 @@ class TestSuite(unittest.TestCase):
                 )
             test_results = []
             for i, time_point in enumerate(test_recurrence):
-                if i > 2:
+                if i <= 2:
+                    test_results.append(str(time_point))
+                if i > 10:
                     break
-                test_results.append(str(time_point))
+                self.assertEqual(
+                    test_recurrence.get_is_valid(time_point), True,
+                    "%s: get_is_valid: %s" % (expression, time_point)
+                )
+                self.assertEqual(
+                    test_recurrence.get_is_valid(
+                        time_point, use_brute_force=True),
+                    True,
+                    "%s: get_is_valid (brute): %s" % (expression, time_point)
+                )
             self.assertEqual(test_results, ctrl_results, expression)
             if test_recurrence.start_point is None:
                 forward_method = test_recurrence.get_prev
@@ -1439,6 +1451,29 @@ def test_timepoint_at_year(test_year):
         my_date += timedelta
 
 
+def main():
+    """Run tests via the command line.
+
+    If arguments are specified, only test names that contain an
+    argument will be run.
+
+    """
+    parser = optparse.OptionParser()
+    opts, args = parser.parse_args()
+    loader = unittest.TestLoader()
+    if args:
+        names = loader.getTestCaseNames(TestSuite)
+        test_names = []
+        for name in names:
+            for arg in args:
+                if arg in name:
+                    test_names.append("__main__.TestSuite." + name)
+                    break
+        test_suite = loader.loadTestsFromNames(test_names, module=None)
+    else:
+        test_suite = loader.loadTestsFromTestCase(TestSuite)
+    unittest.TextTestRunner(verbosity=2).run(test_suite)
+
+
 if __name__ == "__main__":
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestSuite)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    main()
