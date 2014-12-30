@@ -144,7 +144,7 @@ class BadInputError(ValueError):
         return format_string.format(*format_args)
 
 
-class BadUnitsComparisonError(ValueError):
+class UnitsComparisonError(ValueError):
 
     NOMINAL = "Cannot mix nominal & uniform units: {0} vs {1}"
 
@@ -246,7 +246,7 @@ class TimeRecurrence(object):
                 diff_duration = timepoint.sub(self.start_point)
             try:
                 remainder = diff_duration % self.duration
-            except BadUnitsComparisonError:
+            except UnitsComparisonError:
                 # Can't compare the durations, so do it the non-cheap way.
                 return self.get_is_valid(timepoint, use_brute_force=True)
             # self.start_point + self.interval * some_number = timepoint.
@@ -438,7 +438,7 @@ class Duration(object):
     def get_days_and_seconds(self, skip_errors_for_nominal=False):
         """Return a duration converted to a number of days and seconds.
 
-        Raise BadUnitsComparisonError if we have non-uniform (nominal)
+        Raise UnitsComparisonError if we have non-uniform (nominal)
         unit information and skip_errors_for_nominal is False.
 
         Seconds are returned in the range
@@ -467,7 +467,7 @@ class Duration(object):
     def get_months(self):
         """Return a converted purely-years or months duration in months.
         
-        Raise BadUnitsComparisonError if we have non-year/non-month
+        Raise UnitsComparisonError if we have non-year/non-month
         unit information.
 
         """
@@ -476,7 +476,7 @@ class Duration(object):
                 continue
             value = getattr(self, attribute)
             if value is not None and value != 0:
-                raise BadUnitsComparisonError(self, "years,months")
+                raise UnitsComparisonError(self, "years,months")
         months = 0
         if self.years is not None:
             months += CALENDAR.MONTHS_IN_YEAR
@@ -487,7 +487,7 @@ class Duration(object):
     def get_seconds(self, skip_errors_for_nominal=False):
         """Return a duration converted into a number of seconds.
 
-        Raise BadUnitsComparisonError if we have non-uniform (nominal)
+        Raise UnitsComparisonError if we have non-uniform (nominal)
         unit information and skip_errors_for_nominal is False.
 
         """
@@ -529,7 +529,7 @@ class Duration(object):
 
         If other is a Duration, return the integer results of mod
         or divmod against the unit numbers of self and other. If the
-        units are incompatible, raise BadUnitsComparisonError.
+        units are incompatible, raise UnitsComparisonError.
 
         If other is an integer, return the results of mod or divmod as
         durations with the equivalent operations on the original
@@ -540,7 +540,7 @@ class Duration(object):
             i_am_nominal = self.get_has_nominal_units()
             other_is_nominal = other.get_has_nominal_units()
             if i_am_nominal != other_is_nominal:
-                raise BadUnitsComparisonError(self, other)
+                raise UnitsComparisonError(self, other)
             if i_am_nominal:
                 my_months = self.get_months()
                 other_months = other.get_months()
@@ -670,7 +670,7 @@ class Duration(object):
         i_am_nominal = self.get_has_nominal_units()
         other_is_nominal = other.get_has_nominal_units()
         if i_am_nominal != other_is_nominal:
-            raise BadUnitsComparisonError(self, other)
+            raise UnitsComparisonError(self, other)
         if i_am_nominal:
             my_months = self.get_months()
             other_months = other.get_months()
